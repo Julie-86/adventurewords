@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adventurewords
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adventurewords
+  template:
+    metadata:
+      labels:
+        app: adventurewords
+    spec:
+      containers:
+      - name: adventurewords
+        image: julie86/adventurewords:latest
+        ports:
+        - containerPort: 8081
