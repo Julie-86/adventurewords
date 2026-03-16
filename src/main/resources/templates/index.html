@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Adventure Words Game</title>
+    <!-- SweetAlert2 CSS & JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            padding: 40px;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        input[type="text"] {
+            padding: 8px;
+            font-size: 16px;
+            width: 40px;
+            text-align: center;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        p {
+            font-size: 18px;
+        }
+    </style>
+    <script>
+        function makeGuess() {
+            let letter = document.getElementById("letter").value;
+            if(letter === "") return false; // prevenim trimiterile goale
+
+            fetch('/guess?letter=' + letter, {method: 'POST'})
+                .then(resp => resp.text())
+                .then(data => {
+                    let parts = data.split('|');
+                    document.getElementById("word").innerText = parts[0];
+                    document.getElementById("tries").innerText = parts[1];
+
+                    if(parts[2] === 'true') {
+                        Swal.fire({
+                            title: parts[3] === 'true' ? '🎉 You won!' : '💀 You lost!',
+                            text: parts[3] === 'true' ? '' : 'The word was: ' + parts[4],
+                            icon: parts[3] === 'true' ? 'success' : 'error',
+                            confirmButtonText: 'Play Again'
+                        }).then(() => {
+   			    window.location.href = "/restart";
+			});
+                    }
+                });
+            document.getElementById("letter").value = '';
+            return false; // prevenim refresh
+        }
+    </script>
+</head>
+<body>
+    <h1>Adventure Words Game</h1>
+    <p>Word: <span id="word" th:text="${word}">_ _ _ _ _</span></p>
+    <p>Tries remaining: <span id="tries" th:text="${tries}">5</span></p>
+    <form onsubmit="return makeGuess();">
+        Enter letter: <input type="text" id="letter" maxlength="1" autofocus/>
+        <button type="submit">Guess</button>
+    </form>
+</body>
+</html>
+
