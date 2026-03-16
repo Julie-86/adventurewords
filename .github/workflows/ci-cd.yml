@@ -1,0 +1,84 @@
+name: AdventureWords CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # -------------------------
+  # 1️⃣ Build and Test Maven Project
+  # -------------------------
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # Setup Java 17 environment
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Build the Maven project
+      - name: Build with Maven
+        run: mvn clean install
+
+      # Run unit tests
+      - name: Run tests
+        run: mvn test
+
+  # -------------------------
+  # 2️⃣ Build Docker Image and Push to DockerHub
+  # -------------------------
+  docker-build:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout code again
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # Login to DockerHub
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}  # DockerHub username stored as GitHub Secret
+          password: ${{ secrets.DOCKER_PASSWORD }}  # DockerHub password or token stored as GitHub Secret
+
+      # Build Docker image
+      - name: Build Docker image
+        run: docker build -t julie86/adventurewords:latest .
+
+      # Push Docker image to DockerHub
+      - name: Push Docker image
+        run: docker push julie86/adventurewords:latest
+
+  # -------------------------
+  # 3️⃣ Deploy to Kubernetes Cluster
+  # -------------------------
+  deploy-k8s:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout code again
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # Setup kubectl for Kubernetes deployment
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      # Deploy the application to Kubernetes
+      - name: Deploy to Kubernetes
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }} # kubeconfig stored as GitHub Secret
+        run: |
+          kubectl apply -f k8s-deployment.yaml
+          kubectl apply -f k8s-service.yaml
