@@ -1,23 +1,21 @@
-# Use official Eclipse Temurin image with Java 17
+# ---------- Stage 1: Build application ----------
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+
+# ---------- Stage 2: Run application ----------
 FROM eclipse-temurin:17-jdk-alpine
 
 WORKDIR /app
 
-# Copy only pom.xml and download dependencies (for caching)
-COPY pom.xml .
-RUN apk add --no-cache maven && mvn dependency:go-offline
+COPY --from=build /app/target/adventurewords-1.0-SNAPSHOT.jar app.jar
 
-# Copy only the selected source files
-COPY src ./src
-
-# Build the application
-RUN mvn clean package -DskipTests
-
-# Copy the generated JAR
-COPY target/adventurewords-*.jar app.jar
-
-# Expose port 8081 (must match application.properties)
 EXPOSE 8081
 
-# Command to run the application
 ENTRYPOINT ["java","-jar","app.jar"]
