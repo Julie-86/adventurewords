@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Temporary / local files
+*.txt
+*.sh
+*.deb
+dump.txt
+Summary.txt
