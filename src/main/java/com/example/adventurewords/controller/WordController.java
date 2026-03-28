@@ -4,6 +4,7 @@ import com.example.adventurewords.model.Word;
 import com.example.adventurewords.service.WordService;
 import com.example.adventurewords.dto.WordRequest;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -43,8 +44,8 @@ public class WordController {
      * @param text the word text (from request body)
      * @return the saved Word entity
      */
-    @PostMapping
-    public Word createWord(@RequestBody WordRequest request) {
-        return wordService.saveWord(request.getText());	
-    }
+     @PostMapping
+     public Word createWord(@Valid @RequestBody WordRequest request) {
+         return wordService.saveWord(request.getText());
+     }
 }
