@@ -1,10 +1,10 @@
 package com.example.adventurewords.dto;
 
-/**
- * DTO for creating a Word.
- */
+import jakarta.validation.constraints.NotBlank;
+
 public class WordRequest {
 
+    @NotBlank(message = "Word cannot be empty")
     private String text;
 
     public String getText() {
