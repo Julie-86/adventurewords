@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:15
+    container_name: adventurewords-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: adventurewords
+      POSTGRES_USER: adventurewords_user
+      POSTGRES_PASSWORD: SuperSecurePassword123!
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - adventurewords-net
+
+  app:
+    build: .
+    container_name: adventurewords-app
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/adventurewords
+      SPRING_DATASOURCE_USERNAME: adventurewords_user
+      SPRING_DATASOURCE_PASSWORD: SuperSecurePassword123!
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+    networks:
+      - adventurewords-net
+    restart: unless-stopped
+
+volumes:
+  db_data:
+
+networks:
+  adventurewords-net:
+    driver: bridge
